@@ -46,12 +46,12 @@ for (name <- destnames) {
   if (target.exists()) {
     //
     // the built jars are not in a specific folder, but in the target folder under each component. 
-    // we sort and take(1) to avoid the -config and -sources jars
+    // we sort and use headOption to avoid the -config and -sources jars
     //
-    val srcs = target.listFiles().filter(f => f.getName.startsWith("jetty-")).sortWith((x,y) => x.getName.length < y.getName.length).headOption;
+    val srcs = target.listFiles().filter(f => f.getName.startsWith("jetty-")).sortWith((x,y) => x.getName.length < y.getName.length);
     val dest = new File(lib_jetty, name+".jar");
 
-    srcs match {
+    srcs.headOption match {
       case Some(src) => {
         try {
           Files.copy(src.toPath, dest.toPath, StandardCopyOption.REPLACE_EXISTING);
