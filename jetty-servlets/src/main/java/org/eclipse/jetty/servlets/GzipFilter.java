@@ -288,40 +288,10 @@ public class GzipFilter extends UserAgentFilter
         HttpServletRequest request=(HttpServletRequest)req;
         HttpServletResponse response=(HttpServletResponse)res;
 
-        // If not a supported method or it is an Excluded URI - no Vary because no matter what client, this URI is always excluded
-        String requestURI = request.getRequestURI();
-        if (!_methods.contains(request.getMethod()) || isExcludedPath(requestURI))
+        if (!isGzipPreferred(request))
         {
             super.doFilter(request,response,chain);
             return;
-        }
-        
-        // Exclude non compressible mime-types known from URI extension. - no Vary because no matter what client, this URI is always excluded
-        if (_mimeTypes.size()>0)
-        {
-            String mimeType = _context.getMimeType(request.getRequestURI());
-            
-            if (mimeType!=null && _mimeTypes.contains(mimeType)==_excludeMimeTypes)
-            {
-                // handle normally without setting vary header
-                super.doFilter(request,response,chain);
-                return;
-            }
-        }
-
-        if (_checkGzExists && request.getServletContext()!=null)
-        {
-            String path=request.getServletContext().getRealPath(URIUtil.addPaths(request.getServletPath(),request.getPathInfo()));
-            if (path!=null)
-            {
-                File gz=new File(path+".gz");
-                if (gz.exists())
-                {
-                    // allow default servlet to handle
-                    super.doFilter(request,response,chain);
-                    return;
-                }
-            }
         }
         
         // Excluded User-Agents
@@ -363,6 +333,44 @@ public class GzipFilter extends UserAgentFilter
             else
                 wrappedResponse.finish();
         }
+    }
+
+    protected boolean isGzipPreferred(HttpServletRequest request) {
+
+        // If not a supported method or it is an Excluded URI - no Vary because no matter what client, this URI is always excluded
+        String requestURI = request.getRequestURI();
+        if (!_methods.contains(request.getMethod()) || isExcludedPath(requestURI))
+        {
+            return false;
+        }
+        
+        // Exclude non compressible mime-types known from URI extension. - no Vary because no matter what client, this URI is always excluded
+        if (_mimeTypes.size()>0)
+        {
+            String mimeType = _context.getMimeType(request.getRequestURI());
+            
+            if (mimeType!=null && _mimeTypes.contains(mimeType)==_excludeMimeTypes)
+            {
+                // handle normally without setting vary header
+                return false;
+            }
+        }
+
+        if (_checkGzExists && request.getServletContext()!=null)
+        {
+            String path=request.getServletContext().getRealPath(URIUtil.addPaths(request.getServletPath(),request.getPathInfo()));
+            if (path!=null)
+            {
+                File gz=new File(path+".gz");
+                if (gz.exists())
+                {
+                    // allow default servlet to handle
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /* ------------------------------------------------------------ */
