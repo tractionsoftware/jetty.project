@@ -40,3 +40,6 @@ bin/
 #maven
 *.versionsBackup
 *.releaseBackup
+
+# teampage-install compiled output
+teampage-install.sh.jar
