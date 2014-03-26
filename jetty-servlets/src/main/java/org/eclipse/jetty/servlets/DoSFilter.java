@@ -578,7 +578,7 @@ public class DoSFilter implements Filter
 
         if (tracker == null)
         {
-            boolean allowed = checkWhitelist(request.getRemoteAddr());
+            boolean allowed = isDefinitelyAllowed(request);
             int maxRequestsPerSec = getMaxRequestsPerSec();
             tracker = allowed ? new FixedRateTracker(loadId, type, maxRequestsPerSec)
                     : new RateTracker(loadId, type, maxRequestsPerSec);
@@ -636,6 +636,33 @@ public class DoSFilter implements Filter
             }
         }
         return false;
+    }
+
+    /**
+     * Returns true if the isDefinitelyAllowedOverride method returns
+     * true, or if the given request's remote address is on the white
+     * list for this DoSFilter instance.
+     */
+    private boolean isDefinitelyAllowed(ServletRequest request) {
+	if (isDefinitelyAllowedOverride(request)) {
+	    return true;
+	}
+	return checkWhitelist(request.getRemoteAddr());
+    }
+
+    /**
+     * Returns true if the given request is "definitely allowed." The
+     * default implementation returns false, but this gives a hook
+     * that allows subclasses if they need to override the definition
+     * of the "is definitely allowed" concept that extends beyond the
+     * request's remote address being on the white list.
+     *
+     * "Definitely allowed" is an inexact phrase which I chose solely
+     * to match the boolean variable "allowed" above. The concept is
+     * sound, though. [shep 25.Mar.2014]
+     */
+    protected boolean isDefinitelyAllowedOverride(ServletRequest request) {
+	return false;
     }
 
     protected boolean subnetMatch(String subnetAddress, String address)
