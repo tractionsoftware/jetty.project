@@ -40,20 +40,26 @@ val lib_jetty = new File(teampage + "/lib/jetty");
 //
 // to find them in the jetty source, we just want the name without the .jar extension
 // 
-val destnames = lib_jetty.listFiles().map(_.getName.split('.').init.mkString(".")).filter(s => s.startsWith("jetty-") && !s.contains("-sources"));
+val destnames = lib_jetty.listFiles().map(_.getName.split('.').init.mkString(".")).filter(s => (s.startsWith("jetty-") || s.startsWith("websocket") || s.startsWith("javax-websocket")) && !s.contains("-sources"));
 
 //
 // now move them if we can find them
 //
 for (name <- destnames) {    
 
-  val target = new File(name+"/target");
+  var target = new File(name+"/target");
+
+  // special handling for websocket files
+  if (!target.exists() && name.contains("websocket")) {
+    target = new File("jetty-websocket/"+name+"/target");
+  }
+
   if (target.exists()) {
     //
     // the built jars are not in a specific folder, but in the target folder under each component. 
     // we sort and use headOption to avoid the -config and -sources jars
     //
-    val srcs = target.listFiles().filter(f => f.getName.startsWith("jetty-")).sortWith((x,y) => x.getName.length < y.getName.length);
+    val srcs = target.listFiles().filter(f => f.getName.startsWith("jetty-") || f.getName.contains("websocket")).sortWith((x,y) => x.getName.length < y.getName.length);
     val dest = new File(lib_jetty, name+".jar");
 
     srcs.headOption match {
