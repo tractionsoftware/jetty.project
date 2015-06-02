@@ -27,7 +27,7 @@ def copy(src: Path, dest: Path): Unit =  {
 //
 // find our teampage source using either the 1st arg, the TEAMPAGE_HOME env, or a default that none of us actually use
 //
-val teampage = if (argv.size > 0) argv(1) else Properties.envOrElse("TEAMPAGE_HOME", "~/src/hg/teampage");
+val teampage = if (args.size > 0) args(1) else Properties.envOrElse("TEAMPAGE_HOME", "~/src/hg/teampage");
 
 //
 // jetty jars are inside the lib/jetty folder
