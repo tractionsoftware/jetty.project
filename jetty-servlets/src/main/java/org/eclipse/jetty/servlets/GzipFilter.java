@@ -364,12 +364,6 @@ public class GzipFilter extends UserAgentFilter
             }
         }
 
-        //If the Content-Encoding is already set, then we won't compress
-        if (response.getHeader("Content-Encoding") != null)
-        {
-            return false;
-        }
-
         if (_checkGzExists && request.getServletContext()!=null)
         {
             String path=request.getServletContext().getRealPath(URIUtil.addPaths(request.getServletPath(),request.getPathInfo()));
